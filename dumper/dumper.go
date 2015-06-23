@@ -15,8 +15,6 @@ import (
 
 // Defaults
 const (
-	es_host     = "localhost"
-	es_port     = "9200"
 	size        = "500"
 	scrollTime  = "10m"
 	concurrency = 1
@@ -38,8 +36,8 @@ type Dumper struct {
 
 func New() *Dumper {
 	return &Dumper{
-		EsHost:      es_host,
-		EsPort:      es_port,
+		EsHost:      "localhost",
+		EsPort:      "6379",
 		Size:        size,
 		ScrollTime:  scrollTime,
 		Concurrency: concurrency,
@@ -72,7 +70,7 @@ func (d *Dumper) Dump(indexes []string) {
 
 // createScroll creates the scroll from the index
 func (d *Dumper) createScroll(index string) string {
-	content, err := d.esGet("http://" + es_host + ":" + es_port + "/" + index + "/_search?scroll=" + scrollTime + "&size=" + size + "&search_type=scan")
+	content, err := d.esGet("http://" + d.EsHost + ":" + d.EsPort + "/" + index + "/_search?scroll=" + scrollTime + "&size=" + size + "&search_type=scan")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -146,17 +144,17 @@ func (d *Dumper) getHitsAndNewScrollId(content []byte) ([]*gabs.Container, strin
 
 // scrollUrl returns a url that is used to get data from a scrollId
 func (d *Dumper) scrollUrl(scrollId string) string {
-	return "http://" + es_host + ":" + es_port + "/_search/scroll?scroll=" + scrollTime + "&search_type=scan&size=" + size + "&scroll_id=" + scrollId
+	return "http://" + d.EsHost + ":" + d.EsPort + "/_search/scroll?scroll=" + scrollTime + "&search_type=scan&size=" + size + "&scroll_id=" + scrollId
 }
 
 // esGet performs a get request againt an url and returns the response.
 func (d *Dumper) esGet(url string) ([]byte, error) {
 	r, err := http.Get(url)
-	defer r.Body.Close()
 
 	if err != nil {
 		return nil, err
 	}
+	defer r.Body.Close()
 
 	content, err := ioutil.ReadAll(r.Body)
 	if err != nil {
