@@ -1,4 +1,6 @@
 # esdump
+Tool to dump data from elasticsearch.
+
 ```
 $ ./esdump dump --help
 NAME:
